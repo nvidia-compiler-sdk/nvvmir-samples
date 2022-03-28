@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 NVIDIA Corporation
+ * Copyright (c) 2014-2022 NVIDIA Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -125,7 +125,7 @@ char *generatePTX(const char *ll, size_t size, const char *filename)
     nvvmProgram program;
     size_t PTXSize;
     char *PTX = NULL;
-    const char *options[] = { "-arch=compute_30" };
+    const char *options[] = { "-arch=compute_52" };
 
     result = nvvmCreateProgram(&program);
     if (result != NVVM_SUCCESS) {

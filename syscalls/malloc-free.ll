@@ -1,4 +1,4 @@
-; Copyright (c) 2014 NVIDIA Corporation
+; Copyright (c) 2014-2022 NVIDIA Corporation
 ;
 ; Permission is hereby granted, free of charge, to any person obtaining a copy
 ; of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,8 @@
 ; }
 ;
 
-target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64"
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-i128:128:128-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64"
+target triple = "nvptx64-nvidia-cuda"
 
 @p = internal addrspace(1) global i32* null, align 8
 
@@ -47,4 +48,4 @@ declare noalias i8* @malloc(i64) nounwind
 declare void @free(i8* nocapture) nounwind
 
 !nvvm.annotations = !{!0}
-!0 = metadata !{void ()* @foo, metadata !"kernel", i32 1}
+!0 = !{void ()* @foo, !"kernel", i32 1}

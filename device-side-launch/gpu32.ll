@@ -1,4 +1,4 @@
-; Copyright (c) 2014 NVIDIA Corporation
+; Copyright (c) 2014-2022 NVIDIA Corporation
 ;
 ; Permission is hereby granted, free of charge, to any person obtaining a copy
 ; of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,8 @@
 ;
 ; }
 
-target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64"
+target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-i128:128:128-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64"
+target triple = "nvptx32-nvidia-cuda"
 
 %struct.dim3 = type { i32, i32, i32 }
 %struct.CUstream_st = type opaque
@@ -53,7 +54,7 @@ entry:
   br i1 %cmp, label %if.then, label %if.end
 
 if.then:                                          ; preds = %entry
-  %1 = call i8* @llvm.nvvm.ptr.global.to.gen.p0i8.p1i8(i8 addrspace(1)* getelementptr inbounds ([29 x i8] addrspace(1)* @"$str", i32 0, i32 0))
+  %1 = call i8* @llvm.nvvm.ptr.global.to.gen.p0i8.p1i8(i8 addrspace(1)* getelementptr inbounds ([29 x i8], [29 x i8] addrspace(1)* @"$str", i32 0, i32 0))
   store i32 %depth, i32 addrspace(5)* %gen2local, align 8
   %call = call i32 @vprintf(i8* %1, i8* %tmp31.sub)
   br label %if.end
@@ -94,4 +95,4 @@ declare i32 @cudaLaunchDeviceV2(i8*, %struct.CUstream_st*)
 declare i32 addrspace(5)* @llvm.nvvm.ptr.gen.to.local.p5i32.p0i32(i32*) nounwind readnone
 
 !nvvm.annotations = !{!0}
-!0 = metadata !{void (i32)* @kernel, metadata !"kernel", i32 1}
+!0 = !{void (i32)* @kernel, !"kernel", i32 1}

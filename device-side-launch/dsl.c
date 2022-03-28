@@ -78,7 +78,7 @@ CUdevice cudaDeviceInit()
 
     checkCudaErrors( cuDeviceComputeCapability(&major, &minor, cuDevice) );
     printf("compute capability = %d.%d\n", major, minor);
-    if (major < 3 || minor < 5) {      
+    if (major < 3 && minor < 5) {
         fprintf(stderr, "Device 0 is not sm_35 or later\n");
         exit(-1);
     }

@@ -144,7 +144,7 @@ char *generatePTX(const char *ll, size_t size, const char *filename)
     nvvmProgram program;
     size_t PTXSize;
     char *PTX = NULL;
-    const char *options[] = { "-arch=compute_52" };
+    const char *options[] = { "-arch=compute_50" };
 
     result = nvvmCreateProgram(&program);
     if (result != NVVM_SUCCESS) {

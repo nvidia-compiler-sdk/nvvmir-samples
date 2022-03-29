@@ -63,8 +63,8 @@ CUdevice cudaDeviceInit()
 
     checkCudaErrors( cuDeviceComputeCapability(&major, &minor, cuDevice) );
     printf("compute capability = %d.%d\n", major, minor);
-    if (major < 3) {      
-        fprintf(stderr, "Device 0 is not sm_30 or later\n");
+    if (major < 5) {
+        fprintf(stderr, "Device 0 is not sm_50 or later\n");
         exit(-1);
     }
     return cuDevice;

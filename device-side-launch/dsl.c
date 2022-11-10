@@ -213,13 +213,11 @@ int main(int argc, char **argv)
 
     // Get the ll from file
     size_t size = 0;
+
     // Kernel parameters
     void *params[] = { &depth };
-#if BUILD_64_BIT
+
     const char *filename = "gpu64.ll";
-#else
-    const char *filename = "gpu32.ll";
-#endif
     char *ll = loadProgramSource(filename, &size);
     fprintf(stdout, "NVVM IR ll file loaded\n");
 

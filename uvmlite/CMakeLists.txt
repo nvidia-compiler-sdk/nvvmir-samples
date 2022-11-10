@@ -1,4 +1,4 @@
-# Copyright (c) 2014 NVIDIA Corporation
+# Copyright (c) 2014-2022 NVIDIA Corporation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,12 @@
 
 set(CMAKE_INSTALL_RPATH ${LIBNVVM_HOME})
 
-if(CMAKE_SIZEOF_VOID_P STREQUAL "8")
-  add_definitions(-DBUILD_64_BIT)
-endif()
-
-if (CMAKE_SIZEOF_VOID_P STREQUAL "8")
-  if (WIN32)
-    set (LIB_ARCH_SUFFIX "/x64")
-  elseif (APPLE)
-    set (LIB_ARCH_SUFFIX "")
-  else ()
-    set (LIB_ARCH_SUFFIX "64")
-  endif()
-else()
-  if (WIN32)
-    set (LIB_ARCH_SUFFIX "/Win32")
-  else()
-    set (LIB_ARCH_SUFFIX "")
-  endif()
+if (WIN32)
+  set (LIB_ARCH_SUFFIX "/x64")
+elseif (APPLE)
+  set (LIB_ARCH_SUFFIX "")
+else ()
+  set (LIB_ARCH_SUFFIX "64")
 endif()
 
 set_property(
@@ -60,5 +48,4 @@ else (WIN32)
 endif (WIN32)
 
 install(TARGETS uvmlite DESTINATION bin)
-install(FILES uvmlite64.ll
-        DESTINATION bin)
+install(FILES uvmlite64.ll DESTINATION bin)

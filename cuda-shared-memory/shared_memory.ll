@@ -47,3 +47,6 @@ entry:
 
 !nvvm.annotations = !{!0}
 !0 = !{void ()* @foo, !"kernel", i32 1}
+
+!nvvmir.version = !{!1}
+!1 = !{i32 2, i32 0}

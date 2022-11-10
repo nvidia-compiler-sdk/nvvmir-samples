@@ -96,3 +96,6 @@ declare i32 addrspace(5)* @llvm.nvvm.ptr.gen.to.local.p5i32.p0i32(i32*) nounwind
 
 !nvvm.annotations = !{!0}
 !0 = !{void (i32)* @kernel, !"kernel", i32 1}
+
+!nvvmir.version = !{!1}
+!1 = !{i32 2, i32 0}

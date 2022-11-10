@@ -199,11 +199,7 @@ int main(int argc, char **argv)
     // Get the ll from file
     size_t size = 0;
 
-#if BUILD_64_BIT
     const char *filename = "uvmlite64.ll";
-#else
-    #error  uvm-lite only supports 64-bit mode
-#endif
     char *ll = loadProgramSource(filename, &size);
     fprintf(stdout, "NVVM IR ll file loaded\n");
 

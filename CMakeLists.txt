@@ -1,4 +1,4 @@
-# Copyright (c) 2014 NVIDIA Corporation
+# Copyright (c) 2014-2022 NVIDIA Corporation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(libnvvm-samples)
-
 
 if (DEFINED ENV{CUDA_HOME})
   set(CUDA_HOME "$ENV{CUDA_HOME}")
@@ -60,20 +59,9 @@ else()
 endif()
 message(STATUS "Using LLVM_HOME: ${LLVM_HOME}")
 
-if (CMAKE_SIZEOF_VOID_P STREQUAL "8")
-  if (WIN32)
-    set (CUDA_LIB_SEARCH_PATH "${CUDA_HOME}/lib/x64")
-    set (NVVM_DLL_NAME nvvm64_20_0.dll)
-  else ()
-    set (CUDA_LIB_SEARCH_PATH "")
-  endif()
-else()
-  if (WIN32)
-    set (CUDA_LIB_SEARCH_PATH "${CUDA_HOME}/lib/Win32")
-    set (NVVM_DLL_NAME nvvm32_20_0.dll)
-  else()
-    set (CUDA_LIB_SEARCH_PATH "")
-  endif()
+if (WIN32)
+  set (CUDA_LIB_SEARCH_PATH "${CUDA_HOME}/lib/x64")
+  set (NVVM_DLL_NAME nvvm64_20_0.dll)
 endif()
 
 ### Find CUDA libs/tools
@@ -101,32 +89,22 @@ if (NOT NVCC)
 endif()
 message(STATUS "Using nvcc: ${NVCC}")
 
-
 ### Find libNVVM
 # The directory structure for nvvm is a bit complex.
 # On Windows:
-#   32-bit -- nvvm/lib/Win32
 #   64-bit -- nvvm/lib/x64
 # On Linux:
-#   32-bit -- nvvm/lib
 #   64-bit -- nvvm/lib64
 # On Mac:
 #   Universal -- nvvm/lib
-if (CMAKE_SIZEOF_VOID_P STREQUAL "8")
-  if (WIN32)
-    set (LIB_ARCH_SUFFIX "/x64")
-  elseif (APPLE)
-    set (LIB_ARCH_SUFFIX "")
-  else ()
-    set (LIB_ARCH_SUFFIX "64")
-  endif()
-else()
-  if (WIN32)
-    set (LIB_ARCH_SUFFIX "/Win32")
-  else()
-    set (LIB_ARCH_SUFFIX "")
-  endif()
+if (WIN32)
+  set (LIB_ARCH_SUFFIX "/x64")
+elseif (APPLE)
+  set (LIB_ARCH_SUFFIX "")
+else ()
+  set (LIB_ARCH_SUFFIX "64")
 endif()
+
 find_library(NVVM_LIB nvvm PATHS "${LIBNVVM_HOME}/lib${LIB_ARCH_SUFFIX}")
 find_file(NVVM_H nvvm.h PATHS "${LIBNVVM_HOME}/include")
 if(NVVM_LIB AND NVVM_H)
@@ -174,10 +152,8 @@ else()
   message(STATUS "cuda-c-linking sample will not be built!")
 endif()
 
-
 ### Include common headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/common/include")
-
 
 ### Samples
 add_subdirectory(device-side-launch)

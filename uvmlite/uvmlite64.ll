@@ -49,7 +49,9 @@ define void @test_kernel(i32* nocapture %ptr) nounwind alwaysinline {
 declare i32 addrspace(1)* @llvm.nvvm.ptr.gen.to.global.p1i32.p0i32(i32*) nounwind readnone
 
 !nvvm.annotations = !{!7, !8, !9}
+!nvvmir.version = !{!6}
 
+!6 = !{i32 2, i32 0}
 !7 = !{i32 addrspace(1)* @xxx, !"managed", i32 1}
 !8 = !{i32 addrspace(1)* @yyy, !"managed", i32 1}
 !9 = !{void (i32*)* @test_kernel, !"kernel", i32 1}

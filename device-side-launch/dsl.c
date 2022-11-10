@@ -76,7 +76,11 @@ CUdevice cudaDeviceInit()
     cuDeviceGetName(name, 100, cuDevice);
     printf("Using CUDA Device [0]: %s\n", name);
 
-    checkCudaErrors( cuDeviceComputeCapability(&major, &minor, cuDevice) );
+    // Get and test the compute capability.
+    checkCudaErrors(cuDeviceGetAttribute(
+        &major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, cuDevice));
+    checkCudaErrors(cuDeviceGetAttribute(
+        &minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, cuDevice));
     printf("compute capability = %d.%d\n", major, minor);
     if (major < 5) {
         fprintf(stderr, "Device 0 is not sm_50 or later\n");

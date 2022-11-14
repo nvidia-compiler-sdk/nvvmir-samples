@@ -208,7 +208,6 @@ int main(int argc, char **argv)
     CUfunction   hKernel  = 0;
     char        *ptx      = NULL;
     const char  *libCudaDevRtName = NULL;
-    unsigned int i;
     int          depth    = 0;
 
     // Get the ll from file

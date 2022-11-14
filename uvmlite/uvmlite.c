@@ -78,8 +78,6 @@ CUresult initCUDA(CUcontext *phContext,
                   const char *ptx)
 {
     CUlinkState linkState;
-    void *cubin;
-    size_t cubinSize;
     
     // Initialize 
     *phDevice = cudaDeviceInit();
@@ -188,7 +186,6 @@ int main(int argc, char **argv)
     CUmodule     hModule  = 0;
     CUfunction   hKernel  = 0;
     char        *ptx      = NULL;
-    unsigned int i;
     int          depth    = 0;
 
     // Pointers to the variables in the managed memory.

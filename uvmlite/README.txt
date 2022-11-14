@@ -23,7 +23,7 @@ Allocating a variable in the unified virtual memory environment.
 
     ...
 
-    !1 = metadata !{i32 addrspace(1)* @xxx, metadata !"managed", i32 1}
+    !1 = !{i32 addrspace(1)* @xxx, !"managed", i32 1}
 
   A global variable, e.g., @xxx, can be defined and used as usual, but
   here we have a metadata that specifies the managed attributes. (Note
@@ -43,7 +43,7 @@ Accessing a managed variable in the host
 
   Whether of not the pointer points to a managed memory may be queried
   by calling cuPointerGetAttribute() with the pointer attribute
-  CU_POINtER_ATTRIBUTE_IS_MANAGED.
+  CU_POINTER_ATTRIBUTE_IS_MANAGED.
 
     unsigned int attrVal;
     result = cuPointerGetAttribute(&attrVal, CU_POINTER_ATTRIBUTE_IS_MANAGED, devp_xxx);

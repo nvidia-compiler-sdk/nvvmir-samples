@@ -18,109 +18,74 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10.0)
 
 project(libnvvm-samples)
 
+# Initialize the CUDA Toolkit search using CUDA_HOME if the user specified it.
 if (DEFINED ENV{CUDA_HOME})
-  set(CUDA_HOME "$ENV{CUDA_HOME}")
-  set(CUDA_HOME "$ENV{CUDA_HOME}" CACHE PATH "Path to CUDA Toolkit.")
-elseif (NOT DEFINED CUDA_HOME)
-  # There was no CUDA_HOME explicitly given, so try to determine it from
-  # locating nvcc in PATH.
-  find_program(NVCC nvcc)
-  if (NOT NVCC)
-    message(FATAL_ERROR "CUDA_HOME not set, and could not find nvcc in "
-                        "your PATH.  Please either set CUDA_HOME to a "
-                        "installation path for the CUDA 6 Toolkit or "
-                        "add nvcc to your PATH.")
-  endif()
-  get_filename_component(CUDA_HOME "${NVCC}" PATH)
-  get_filename_component(CUDA_HOME "${CUDA_HOME}/.." ABSOLUTE)
-  set(CUDA_HOME "${CUDA_HOME}" CACHE PATH "Path to CUDA Toolkit.")
-endif()
-
-message(STATUS "Using CUDA_HOME: ${CUDA_HOME}")
-
-# libNVVM
-if(NOT DEFINED ENV{LIBNVVM_HOME})
-  set(LIBNVVM_HOME "${CUDA_HOME}/nvvm" CACHE PATH "Path to NVVM.")
-else()
-  set(LIBNVVM_HOME "$ENV{LIBNVVM_HOME}" CACHE PATH "Path to NVVM.")
-endif()
-message(STATUS "Using LIBNVVM_HOME: ${LIBNVVM_HOME}")
-
-# LLVM
-if(DEFINED ENV{LLVM_HOME})
-  set(LLVM_HOME "$ENV{LLVM_HOME}")
-  set(LLVM_HOME "${LLVM_HOME}" CACHE PATH "Path to LLVM 3.2.")
-else()
-  set(LLVM_HOME "" CACHE PATH "Path to LLVM 3.2.")  
-endif()
-message(STATUS "Using LLVM_HOME: ${LLVM_HOME}")
-
-if (WIN32)
-  set (CUDA_LIB_SEARCH_PATH "${CUDA_HOME}/lib/x64")
-  set (NVVM_DLL_NAME nvvm64_20_0.dll)
-endif()
-
-### Find CUDA libs/tools
-find_library(CUDA_LIB cuda ${CUDA_LIB_SEARCH_PATH})
-if(NOT CUDA_LIB)
-  message(FATAL_ERROR "Unable to locate CUDA library/framework")
-endif()
-find_file(CUDA_H cuda.h PATHS "${CUDA_HOME}" "${CUDA_HOME}/include" /usr/local/cuda/include)
-if(CUDA_H)
-  get_filename_component(CUDA_INCLUDE_DIR ${CUDA_H} PATH)
-  include_directories(${CUDA_INCLUDE_DIR})
-else()
-  message(FATAL_ERROR "Unable to locate cuda.h")
-endif()
-message(STATUS "Using cuda header: ${CUDA_H}")
-
-# On Mac, we may also need the headers installed to /usr/local/cuda
-if (APPLE)
-  include_directories(/usr/local/cuda/include)
+  if (${CMAKE_VERSION} VERSION_LESS 3.18.0) 
+    set(CUDA_TOOLKIT_ROOT_DIR  "$ENV{CUDA_HOME}" CACHE PATH "Path to CUDA Toolkit.")
+  else ()  # cmake 3.17 introduced FindCUDAToolkit
+    set(CUDAToolkit_ROOT "$ENV{CUDA_HOME}" CACHE PATH "Path to CUDA Toolkit.")
+  endif ()
 endif ()
 
-find_program(NVCC nvcc PATHS "${CUDA_HOME}" "${CUDA_HOME}/bin")
-if (NOT NVCC)
-  message(FATAL_ERROR "Cannot find nvcc.  Please set CUDA_HOME to a CUDA Toolkit directory")
-endif()
-message(STATUS "Using nvcc: ${NVCC}")
+# Locate the root directory of the CUDA Toolkit.
+# cmake 3.18 introduces the CUDAToolkit_LIBRARY_ROOT variable.
+# This will update CUDA_HOME to a value discovered by find_package.
+if (${CMAKE_VERSION} VERSION_LESS 3.18.0) 
+  find_package(CUDA REQUIRED)
+  set(CUDA_HOME "${CUDA_TOOLKIT_ROOT_DIR}")
+  get_filename_component(CUDA_LIB_ROOT "${CUDA_cudart_static_LIBRARY}" DIRECTORY)
+  find_library(CUDA_LIB NAMES cuda cuda.lib PATHS "${CUDA_LIB_ROOT}" "${CUDA_LIB_ROOT}/stubs")
+  find_library(CUDADEVRT_LIB cudadevrt PATHS "${CUDA_LIB_ROOT}" "${CUDA_LIB_ROOT}/stubs")
+  include_directories("${CUDA_INCLUDE_DIRS}")
+else () # Else, we're using cmake versions >= 3.18.
+  cmake_policy(SET CMP0074 NEW) # Use CUDAToolkit_ROOT as a cmake prefix.
+  find_package(CUDAToolkit REQUIRED)
+  set(CUDA_LIB "${CUDA_cuda_driver_LIBRARY}")
+  include_directories("${CUDAToolkit_INCLUDE_DIRS}")
+  get_filename_component(CUDA_HOME "${CUDAToolkit_BIN_DIR}" DIRECTORY)
+  find_library(CUDADEVRT_LIB cudadevrt PATH "${CUDAToolkit_LIBRARY_DIR}")
+endif ()
+message(STATUS "Using CUDA_HOME: ${CUDA_HOME}")
+message(STATUS "Using CUDA_LIB:  ${CUDA_LIB}")
+message(STATUS "Using CUDADEVRT_LIB: ${CUDADEVRT_LIB}")
+if (("${CUDA_HOME}" STREQUAL "") OR ("${CUDA_LIB}" STREQUAL ""))
+  message(FATAL_ERROR "Failed to locate paths to the CUDA toolkit and nvcc.")
+endif ()
 
-### Find libNVVM
-# The directory structure for nvvm is a bit complex.
-# On Windows:
-#   64-bit -- nvvm/lib/x64
-# On Linux:
-#   64-bit -- nvvm/lib64
-# On Mac:
-#   Universal -- nvvm/lib
-if (WIN32)
-  set (LIB_ARCH_SUFFIX "/x64")
-elseif (APPLE)
-  set (LIB_ARCH_SUFFIX "")
-else ()
-  set (LIB_ARCH_SUFFIX "64")
-endif()
+# Find the nvvm directory in the toolkit.
+find_file(LIBNVVM_HOME nvvm PATHS "$ENV{LIBNVVM_HOME}" "${CUDA_HOME}")
+message(STATUS "Using LIBNVVM_HOME: ${LIBNVVM_HOME}")
 
-find_library(NVVM_LIB nvvm PATHS "${LIBNVVM_HOME}/lib${LIB_ARCH_SUFFIX}")
-find_file(NVVM_H nvvm.h PATHS "${LIBNVVM_HOME}/include")
-if(NVVM_LIB AND NVVM_H)
-  get_filename_component(NVVM_INCLUDE_DIR ${NVVM_H} PATH)
-else()
-  message(FATAL_ERROR "Unable to find libNVVM")
-endif()
+# Find libNVVM and nvvm.h.
+# (Linux: nvvm/lib64, windows: nvvm/lib/x64)
+find_library(NVVM_LIB nvvm PATHS "${LIBNVVM_HOME}/lib64" "${LIBNVVM_HOME}/lib/x64")
+find_file(NVVM_H nvvm.h PATH "${LIBNVVM_HOME}/include")
+get_filename_component(NVVM_INCLUDE_DIR ${NVVM_H} DIRECTORY)
 include_directories(${NVVM_INCLUDE_DIR})
+message(STATUS "Using libnvvm header:      ${NVVM_H}")
 message(STATUS "Using libnvvm header path: ${NVVM_INCLUDE_DIR}")
-message(STATUS "Using libnvvm library: ${NVVM_LIB}")
-set(LIBNVVM_RPATH "${LIBNVVM_HOME}/lib${LIB_ARCH_SUFFIX}")
-set(CMAKE_INSTALL_RPATH ${LIBNVVM_RPATH})
+message(STATUS "Using libnvvm library:     ${NVVM_LIB}")
 
-# On Windows, locate nvvm.dll so we can install it
+# Find libcudadevrt.
+find_library(CUDADEVRT_LIB cudadevrt PATHS "${CUDA_LIB_ROOT}")
+message(STATUS "Using CUDADEVRT_LIB: ${CUDADEVRT_LIB}")
+if (NOT CUDADEVRT_LIB)
+  message(FATAL_ERROR "Failed to locate the path to libcudadevrt.")
+endif ()
+
+# Set the rpath to libnvvm.
+find_path(LIBNVVM_RPATH lib lib64 PATHS "$ENV{LIBNVVM_HOME}" "${CUDA_HOME}")
+get_filename_component(LIBNVVM_RPATH ${NVVM_LIB} DIRECTORY)
+set(CMAKE_INSTALL_RPATH "${LIBNVVM_RPATH}") 
+message(STATUS "Using rpath: ${CMAKE_INSTALL_RPATH}")
+
+# On Windows, locate the nvvm.dll so we can install it.
 if (WIN32)
-  find_file(NVVM_DLL ${NVVM_DLL_NAME} PATHS "${LIBNVVM_HOME}/bin")
+  find_file(NVVM_DLL nvvm64_40_0.dll PATHS "${LIBNVVM_HOME}/bin")
   if(NOT NVVM_DLL)
     message(FATAL_ERROR "Found nvvm .h/.lib, but not .dll")
   endif()
@@ -129,32 +94,8 @@ endif (WIN32)
 
 add_definitions(-DLIBDEVICE_MAJOR_VERSION=1)
 add_definitions(-DLIBDEVICE_MINOR_VERSION=0)
-
-### Find LLVM
-# LLVM is a bit tricky if we don't assume a CMake-based build
-find_file(ADDLLVM_CMAKE AddLLVM.cmake PATHS "${LLVM_HOME}/share/llvm/cmake")
-if(ADDLLVM_CMAKE)
-  list(APPEND CMAKE_MODULE_PATH "${LLVM_HOME}/share/llvm/cmake")
-  include(AddLLVM)
-  include("${LLVM_HOME}/share/llvm/cmake/LLVMConfig.cmake")
-  include(HandleLLVMOptions)
-  include_directories("${LLVM_HOME}/include")
-  link_directories("${LLVM_HOME}/lib")
-  if (NOT LLVM_VERSION_MAJOR STREQUAL "3" OR NOT LLVM_VERSION_MINOR STREQUAL "2")
-    message(STATUS "LLVM found, but version 3.2 is required.")
-    message(STATUS "cuda-c-linking sample will not be built!")
-  else()
-    set(HAVE_LLVM YES)
-    message(STATUS "Using LLVM install from ${LLVM_HOME}")
-  endif()
-else()
-  message(STATUS "CMake-based LLVM install could not be found.")
-  message(STATUS "cuda-c-linking sample will not be built!")
-endif()
-
-### Include common headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/common/include")
 
-### Samples
+# Samples
 add_subdirectory(device-side-launch)
 add_subdirectory(uvmlite)

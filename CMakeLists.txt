@@ -22,6 +22,11 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(libnvvm-samples)
 
+cmake_host_system_information(RESULT CPU64 QUERY IS_64BIT)
+if (NOT CPU64)
+  message(FATAL_ERROR "These samples are only supported for 64bit architectures.")
+endif ()
+
 # Initialize the CUDA Toolkit search using CUDA_HOME if the user specified it.
 if (DEFINED ENV{CUDA_HOME})
   if (${CMAKE_VERSION} VERSION_LESS 3.18.0) 

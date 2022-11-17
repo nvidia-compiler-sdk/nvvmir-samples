@@ -47,14 +47,14 @@ target triple = "nvptx64-nvidia-cuda"
 define void @kernel(i32 %depth) {
 entry:
   %tmp31 = alloca i32, align 8
-  %gen2local = call i32 addrspace(5)* @llvm.nvvm.ptr.gen.to.local.p5i32.p0i32(i32* %tmp31)
+  %gen2local = addrspacecast i32* %tmp31 to i32 addrspace(5)*
   %tmp31.sub = bitcast i32* %tmp31 to i8*
   %0 = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()
   %cmp = icmp eq i32 %0, 0
   br i1 %cmp, label %if.then, label %if.end
 
 if.then:                                          ; preds = %entry
-  %1 = call i8* @llvm.nvvm.ptr.global.to.gen.p0i8.p1i8(i8 addrspace(1)* getelementptr inbounds ([29 x i8], [29 x i8] addrspace(1)* @"$str", i64 0, i64 0))
+  %1 = addrspacecast i8 addrspace(1)* getelementptr inbounds ([29 x i8], [29 x i8] addrspace(1)* @"$str", i64 0, i64 0) to i8 addrspace(0)*
   store i32 %depth, i32 addrspace(5)* %gen2local, align 8
   %call = call i32 @vprintf(i8* %1, i8* %tmp31.sub)
   br label %if.end
@@ -82,8 +82,6 @@ return:                                           ; preds = %cond.true, %if.end7
 
 declare i32 @llvm.nvvm.read.ptx.sreg.tid.x() nounwind readnone
 
-declare i8* @llvm.nvvm.ptr.global.to.gen.p0i8.p1i8(i8 addrspace(1)*) nounwind readnone
-
 declare i32 @vprintf(i8* nocapture, i8*) nounwind
 
 declare void @llvm.cuda.syncthreads() nounwind
@@ -91,8 +89,6 @@ declare void @llvm.cuda.syncthreads() nounwind
 declare i8* @cudaGetParameterBufferV2(i8*, %struct.dim3, %struct.dim3, i32)
 
 declare i32 @cudaLaunchDeviceV2(i8*, %struct.CUstream_st*)
-
-declare i32 addrspace(5)* @llvm.nvvm.ptr.gen.to.local.p5i32.p0i32(i32*) nounwind readnone
 
 !nvvm.annotations = !{!0}
 !0 = !{void (i32)* @kernel, !"kernel", i32 1}

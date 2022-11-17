@@ -34,7 +34,7 @@ target triple = "nvptx64-nvidia-cuda"
 ; This kernel also directly accesses @yyy, which is also managed. 
 define void @test_kernel(i32* nocapture %ptr) nounwind alwaysinline {
   ; *%ptr = *%ptr + 20
-  %gen2other = tail call i32 addrspace(1)* @llvm.nvvm.ptr.gen.to.global.p1i32.p0i32(i32* %ptr)
+  %gen2other = addrspacecast i32* %ptr to i32 addrspace(1)*
   %tmp1 = load i32, i32 addrspace(1)* %gen2other, align 4
   %add = add nsw i32 %tmp1, 20
   store i32 %add, i32 addrspace(1)* %gen2other, align 4
@@ -45,8 +45,6 @@ define void @test_kernel(i32* nocapture %ptr) nounwind alwaysinline {
   store i32 %add3, i32 addrspace(1)* @yyy, align 4
   ret void
 }
-
-declare i32 addrspace(1)* @llvm.nvvm.ptr.gen.to.global.p1i32.p0i32(i32*) nounwind readnone
 
 !nvvm.annotations = !{!7, !8, !9}
 !nvvmir.version = !{!6}

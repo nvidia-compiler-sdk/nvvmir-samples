@@ -81,8 +81,6 @@ CUresult initCUDA(CUcontext *phContext,
                   CUfunction *phKernel,
                   const char *ptx)
 {
-    CUlinkState linkState;
-    
     // Initialize 
     *phDevice = cudaDeviceInit();
 
@@ -190,7 +188,6 @@ int main(int argc, char **argv)
     CUmodule     hModule  = 0;
     CUfunction   hKernel  = 0;
     char        *ptx      = NULL;
-    int          depth    = 0;
 
     // Pointers to the variables in the managed memory.
     // See uvmlite64.ll for their definition.
